@@ -1,0 +1,101 @@
+Cmp-Mod V01 Created by CvPcb (25-Oct-2014 BZR 4029)-stable date = Sun 22 Feb 2015 03:22:13 PM PST
+
+BeginCmp
+TimeStamp = /54E92802;
+Reference = BLE1;
+ValeurCmp = RFDUINO;
+IdModule  = RFD22301;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E92936;
+Reference = D1;
+ValeurCmp = LED;
+IdModule  = LED-3MM;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E92930;
+Reference = D2;
+ValeurCmp = LED;
+IdModule  = LED-3MM;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E92923;
+Reference = D3;
+ValeurCmp = LED;
+IdModule  = LED-3MM;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E95C71;
+Reference = P1;
+ValeurCmp = POWER_REGULATOR;
+IdModule  = TO220_VERT;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E9683F;
+Reference = Q1;
+ValeurCmp = N_CHAN_MOSFET;
+IdModule  = TO220;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E9684E;
+Reference = Q2;
+ValeurCmp = N_CHAN_MOSFET;
+IdModule  = TO220;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E9685D;
+Reference = Q3;
+ValeurCmp = N_CHAN_MOSFET;
+IdModule  = TO220;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E92872;
+Reference = R1;
+ValeurCmp = 10k;
+IdModule  = SM1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E928A6;
+Reference = R2;
+ValeurCmp = 10k;
+IdModule  = SM1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E928AC;
+Reference = R3;
+ValeurCmp = 10k;
+IdModule  = SM1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E9181E;
+Reference = R4;
+ValeurCmp = 3ohm 1W;
+IdModule  = SM1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E92F15;
+Reference = R5;
+ValeurCmp = 30k;
+IdModule  = SM1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /54E943F3;
+Reference = VR1;
+ValeurCmp = 10Mohm;
+IdModule  = SM1206;
+EndCmp
+
+EndListe
