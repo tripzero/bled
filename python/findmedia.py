@@ -25,10 +25,9 @@ def findVideo(videoname):
 		searchQuery = '(DisplayName contains "{0}") and (Type derivedfrom "video")'.format(videoname)
 		print searchQuery
 		results = mediaContainer.SearchObjectsEx(searchQuery, dbus.UInt32(0), dbus.UInt32(10000), ["DisplayName", "URLs"], "")
+		print('results: ', len(results))
 		for n in results:
 			if n.__class__ == dbus.Array:
 				for item in n:
 					return item["URLs"][0]
 
-
-print findVideo("Deschutes")

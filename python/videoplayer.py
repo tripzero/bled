@@ -2,7 +2,7 @@
 
 import gi
 gi.require_version('Gst', '1.0')
-from gi.repository import Gst, GObject, Gtk, GstVideo, GstBase
+from gi.repository import Gst, GObject, GstVideo
 
 import sys
 import cv2
@@ -34,7 +34,7 @@ def img_of_frame(frame):
 	width = frame.info.width
 	height = frame.info.height
 
-	array = numpy.frombuffer(data, dtype=numpy.uint8)
+	array = numpy.fromstring(data, numpy.uint8)
 
 	img = array.reshape((height, width, 3))
 
@@ -45,7 +45,9 @@ def get_avg_pixel(img):
 
 	averagePixelValue = cv2.mean(img)
 
-	rect = cv2.rectangle(img, (0,0), (width, height), averagePixelValue, -1)
+	#rect = cv2.rectangle(img, (0,0), (width, height), averagePixelValue, -1)
+	img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+	cv2.imshow('color', img)
 
 class NewElement(GstVideo.VideoFilter):
 	""" A basic, buffer forwarding Gstreamer element """
@@ -82,58 +84,57 @@ class NewElement(GstVideo.VideoFilter):
 	def do_set_info(self, incaps, in_info, outcaps, out_info):
 		return True
 
-print("init gst")
 def plugin_init(plugin):
-	print("registering plugin")
 	t = GObject.type_register (NewElement)
 	Gst.Element.register(plugin, "newelement", 0, t)
 	return True
 
 Gst.Plugin.register_static(Gst.VERSION_MAJOR, Gst.VERSION_MINOR, "newelement", "newelement filter plugin", plugin_init, '12.06', 'LGPL', 'newelement1', 'newelement2', '')
 
-vsource = Gst.ElementFactory.make('videotestsrc')
+class Player:
 
-print("making new element")
-newElement = Gst.ElementFactory.make("newelement")
-print("made new element")
+	def __init__(self):
+		vsource = Gst.ElementFactory.make('videotestsrc')
+		newElement = Gst.ElementFactory.make("newelement")
+		vconvert1 = Gst.ElementFactory.make("videoconvert", 'vconvert1')
+		filter2 = Gst.ElementFactory.make("capsfilter", 'filter2')
+		filter2.set_property('caps', Gst.Caps.from_string("video/x-raw,format=I420,width=640,height=480"))
+		vconvert2 = Gst.ElementFactory.make("videoconvert", 'vconvert2')
+		#use vaapisink when it works:
+		vsink  = Gst.ElementFactory.make("xvimagesink")
 
-vconvert1 = Gst.ElementFactory.make("videoconvert", 'vconvert1')
+		#vsink.set_property('fullscreen', True)
+		# create the pipeline
 
-filter2 = Gst.ElementFactory.make("capsfilter", 'filter2')
-filter2.set_property('caps', Gst.Caps.from_string("video/x-raw,format=I420,width=640,height=480"))
+		p = Gst.Bin('happybin')
+		p.add(newElement)
+		p.add(vconvert1)
+		p.add(filter2)
+		p.add(vconvert2)
+		p.add(vsink)
 
-vconvert2 = Gst.ElementFactory.make("videoconvert", 'vconvert2')
+		newElement.link(vconvert1)
+		vconvert1.link(filter2)
+		filter2.link(vconvert2)
+		vconvert2.link(vsink)
 
-vsink  = Gst.ElementFactory.make("xvimagesink")
+		p.add_pad(Gst.GhostPad.new('sink', newElement.get_static_pad('sink')))
 
-#vsink.set_property('fullscreen', True)
-# create the pipeline
+		self.playbin = Gst.ElementFactory.make("playbin")
+		self.playbin.set_property('video-sink', p)
 
-p = Gst.Bin('happybin')
-p.add(newElement)
-p.add(vconvert1)
-p.add(filter2)
-p.add(vconvert2)
-p.add(vsink)
+	def play(self):
+		self.playbin.set_state(Gst.State.PLAYING)
 
-newElement.link(vconvert1)
-vconvert1.link(filter2)
-filter2.link(vconvert2)
-vconvert2.link(vsink)
+	def pause(self):
+		self.playbin.set_state(Gst.State.PAUSED)
 
-p.add_pad(Gst.GhostPad.new('sink', newElement.get_static_pad('sink')))
+	def stop(self):
+		self.playbin.set_state(Gst.State.NULL)
 
-playbin = Gst.ElementFactory.make("playbin")
+	def setMedia(self, uri):
+		self.playbin.set_property('uri', uri)
 
-#playbin.set_property("video-filter", p)
-playbin.set_property('video-sink', p)
-playbin.set_property('uri', 'file:///home/kev/patch-share/movies/action/LOTR/[TLOTR]The.Two.Towers[2002][Special.Extended.Edition]DvDrip[Eng]-aXXo/[TLOTR]The.Two.Towers.CD1[2002][Special.Extended.Edition]DvDrip[Eng]-aXXo.avi')
 
-print("playing")
-playbin.set_state(Gst.State.PLAYING)
 
-import signal
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-Gtk.main()
 

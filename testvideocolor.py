@@ -12,10 +12,13 @@ while(cap.isOpened()):
 
 	averagePixelValue = cv2.mean(frame)
 
-	rect = cv2.rectangle(frame, (0,0), (width, height), averagePixelValue, -1)
+	temp = frame.copy()
+
+	rect = cv2.rectangle(temp, (0,0), (width, height), averagePixelValue, -1)
 
 
 	cv2.imshow('frame', rect)
+	cv2.imshow('lotr', frame)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
 
