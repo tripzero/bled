@@ -1,0 +1,10 @@
+Steps to get up and running:
+
+1) Download rygel 0.25.2 from tripzero's clone (contains gobject introspection for RygelRendererGst)
+
+  - https://github.com/tripzero/rygel.git
+
+2) Download mediaart 2.0
+
+  - https://github.com/GNOME/libmediaart.git
+

@@ -3,6 +3,38 @@
 import dbus
 import json
 
+def listRenderers():
+	bus = dbus.SessionBus()
+	managerObject = bus.get_object("com.intel.dleyna-renderer", "/com/intel/dLeynaRenderer")
+	managerInterface = dbus.Interface(managerObject, "com.intel.dLeynaRenderer.Manager")
+
+	renderers = managerInterface.GetRenderers()
+
+	for r in renderers:
+		rendererObject = bus.get_object("com.intel.dleyna-renderer", r)
+		rendererPropertiesInterface = dbus.Interface(rendererObject, "org.freedesktop.DBus.Properties")
+		print("Name:")
+		print(rendererPropertiesInterface.Get("com.intel.dLeynaRenderer.RendererDevice", 'FriendlyName'))
+
+def getRenderer(name):
+	bus = dbus.SessionBus()
+	managerObject = bus.get_object("com.intel.dleyna-renderer", "/com/intel/dLeynaRenderer")
+	managerInterface = dbus.Interface(managerObject, "com.intel.dLeynaRenderer.Manager")
+
+	renderers = managerInterface.GetRenderers()
+
+	for r in renderers:
+		rendererObject = bus.get_object("com.intel.dleyna-renderer", r)
+		rendererPropertiesInterface = dbus.Interface(rendererObject, "org.freedesktop.DBus.Properties")
+		n = rendererPropertiesInterface.Get("com.intel.dLeynaRenderer.RendererDevice", 'FriendlyName')
+		if n == name:
+			return dbus.Interface(rendererObject, 'org.mpris.MediaPlayer2.Player')
+
+def playMedia(renderer, media):
+	renderer.OpenUri(media)
+	renderer.Play()
+
+
 def findVideo(videoname):
 	print "searching for:", videoname
 	bus = dbus.SessionBus()

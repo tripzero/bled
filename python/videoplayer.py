@@ -2,7 +2,7 @@
 
 import gi
 gi.require_version('Gst', '1.0')
-from gi.repository import Gst, GObject, GstVideo
+from gi.repository import Gst, GObject, GstVideo, RygelRendererGst
 
 import sys
 import cv2
@@ -43,11 +43,15 @@ def img_of_frame(frame):
 def get_avg_pixel(img):
 	height, width, layers = img.shape
 
+	img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
 	averagePixelValue = cv2.mean(img)
 
-	#rect = cv2.rectangle(img, (0,0), (width, height), averagePixelValue, -1)
-	img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-	cv2.imshow('color', img)
+	rect = cv2.rectangle(img, (0,0), (width, height), averagePixelValue, -1)
+
+	cv2.imshow('color', rect)
+
+	return averagePixelValue
 
 class NewElement(GstVideo.VideoFilter):
 	""" A basic, buffer forwarding Gstreamer element """
@@ -59,16 +63,18 @@ class NewElement(GstVideo.VideoFilter):
 		"Description is really cool",
 		"Contact")
 
+	__gsignals__ = { 'avg_color' : (GObject.SIGNAL_RUN_FIRST, None, (int, int, int,)) }
+
 	_srctemplate = Gst.PadTemplate.new('src',
 		Gst.PadDirection.SRC,
 		Gst.PadPresence.ALWAYS,
-		Gst.Caps.from_string("video/x-raw,format=RGB,width=640,height=480"))
+		Gst.Caps.from_string("video/x-raw,format=RGB"))
 
 	#sink pad (template): we recieve buffers from our sink pad
 	_sinktemplate = Gst.PadTemplate.new('sink',
 		Gst.PadDirection.SINK,
 		Gst.PadPresence.ALWAYS,
-		Gst.Caps.from_string("video/x-raw,format=RGB,width=640,height=480"))
+		Gst.Caps.from_string("video/x-raw,format=RGB"))
 
 	#register our pad templates
 	__gsttemplates__ = (_srctemplate, _sinktemplate)
@@ -78,7 +84,10 @@ class NewElement(GstVideo.VideoFilter):
 		self.set_passthrough(True)
 
 	def do_transform_frame_ip(self, inframe):
-		get_avg_pixel(img_of_frame(inframe))
+		color = get_avg_pixel(img_of_frame(inframe))
+
+		self.emit('avg_color', color[0], color[1], color[2])
+
 		return Gst.FlowReturn.OK
 
 	def do_set_info(self, incaps, in_info, outcaps, out_info):
@@ -93,34 +102,44 @@ Gst.Plugin.register_static(Gst.VERSION_MAJOR, Gst.VERSION_MINOR, "newelement", "
 
 class Player:
 
+	colorCallback = None
+	renderer = None
+
 	def __init__(self):
+		self.renderer = RygelRendererGst.PlaybinRenderer.new("Awesome Renderer")
+
+		self.renderer.add_interface("eth3")
+
 		vsource = Gst.ElementFactory.make('videotestsrc')
-		newElement = Gst.ElementFactory.make("newelement")
+		self.newElement = Gst.ElementFactory.make("newelement")
+
+		self.newElement.connect('avg_color', self._privateColorHandler)
+
 		vconvert1 = Gst.ElementFactory.make("videoconvert", 'vconvert1')
 		filter2 = Gst.ElementFactory.make("capsfilter", 'filter2')
-		filter2.set_property('caps', Gst.Caps.from_string("video/x-raw,format=I420,width=640,height=480"))
+		filter2.set_property('caps', Gst.Caps.from_string("video/x-raw,format=I420"))
 		vconvert2 = Gst.ElementFactory.make("videoconvert", 'vconvert2')
 		#use vaapisink when it works:
-		vsink  = Gst.ElementFactory.make("xvimagesink")
+		vsink  = Gst.ElementFactory.make("vaapisink")
 
 		#vsink.set_property('fullscreen', True)
 		# create the pipeline
 
 		p = Gst.Bin('happybin')
-		p.add(newElement)
+		p.add(self.newElement)
 		p.add(vconvert1)
 		p.add(filter2)
 		p.add(vconvert2)
 		p.add(vsink)
 
-		newElement.link(vconvert1)
+		self.newElement.link(vconvert1)
 		vconvert1.link(filter2)
 		filter2.link(vconvert2)
 		vconvert2.link(vsink)
 
-		p.add_pad(Gst.GhostPad.new('sink', newElement.get_static_pad('sink')))
+		p.add_pad(Gst.GhostPad.new('sink', self.newElement.get_static_pad('sink')))
 
-		self.playbin = Gst.ElementFactory.make("playbin")
+		self.playbin = self.renderer.get_playbin()
 		self.playbin.set_property('video-sink', p)
 
 	def play(self):
@@ -134,6 +153,14 @@ class Player:
 
 	def setMedia(self, uri):
 		self.playbin.set_property('uri', uri)
+
+	def setColorChangedCallback(self, cb):
+		self.colorCallback = cb
+
+	def _privateColorHandler(self, r, g, b, data):
+		if self.colorCallback is not None:
+			self.colorCallback(r, g, b)
+
 
 
 

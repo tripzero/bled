@@ -127,7 +127,7 @@ playbin = Gst.ElementFactory.make("playbin")
 
 #playbin.set_property("video-filter", p)
 playbin.set_property('video-sink', p)
-playbin.set_property('uri', 'file:///home/kev/patch-share/movies/action/LOTR/[TLOTR]The.Two.Towers[2002][Special.Extended.Edition]DvDrip[Eng]-aXXo/[TLOTR]The.Two.Towers.CD1[2002][Special.Extended.Edition]DvDrip[Eng]-aXXo.avi')
+playbin.set_property('uri', 'file:///home/tripzero/Videos/Visual_Dreams_720.mp4')
 
 print("playing")
 playbin.set_state(Gst.State.PLAYING)
