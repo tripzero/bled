@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (25-Oct-2014 BZR 4029)-stable date = Sun 22 Feb 2015 03:22:13 PM PST
+Cmp-Mod V01 Created by CvPcb (25-Oct-2014 BZR 4029)-stable date = Tue 24 Feb 2015 09:23:04 AM PST
 
 BeginCmp
 TimeStamp = /54E92802;
@@ -33,6 +33,13 @@ TimeStamp = /54E95C71;
 Reference = P1;
 ValeurCmp = POWER_REGULATOR;
 IdModule  = TO220_VERT;
+EndCmp
+
+BeginCmp
+TimeStamp = /54ECB369;
+Reference = PWR1;
+ValeurCmp = PWR_INPUT;
+IdModule  = SIL-2;
 EndCmp
 
 BeginCmp
@@ -89,6 +96,13 @@ TimeStamp = /54E92F15;
 Reference = R5;
 ValeurCmp = 30k;
 IdModule  = SM1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /54ECB74F;
+Reference = USB1;
+ValeurCmp = USB-PROGRAMMER;
+IdModule  = SIL-6;
 EndCmp
 
 BeginCmp
