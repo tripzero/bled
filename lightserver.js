@@ -1,13 +1,13 @@
 #!/usr/bin/env bluemonkey
 
-bluemonkey.loadModule("/usr/lib/i386-linux-gnu/automotive-message-broker/bluemonkeyBleModule.so");
-bluemonkey.loadModule("/usr/lib/i386-linux-gnu/automotive-message-broker/bluemonkeyWsModule.so");
+bluemonkey.loadModule("/usr/lib/x86_64-linux-gnu/bluemonkey/bluemonkeyBleModule.so");
+bluemonkey.loadModule("/usr/lib/x86_64-linux-gnu/bluemonkey/bluemonkeyWsModule.so");
 
 var LEDServiceUuid = "5faaf494-d4c6-483e-b592-d1a6ffd436c9";
 var rxUuid = "5faaf495-d4c6-483e-b592-d1a6ffd436c9";
 var txUuid = "5faaf496-d4c6-483e-b592-d1a6ffd436c9";
 
-devices = [];
+devicesList = new Array();
 
 function color(r, g, b, dim)
 {
@@ -16,59 +16,92 @@ function color(r, g, b, dim)
 	return String.fromCharCode(r*dim) + String.fromCharCode(g*dim) + String.fromCharCode(b*dim)
 }
 
-function Color(r, g, b)
+function doCommand(msg, client)
 {
-	this.red = r;
-	this.green = g;
-	this.blue = b;
-	this.dim = 1.0;
+	command = JSON.parse(msg)
+
+	if (command.method === "changeLight")
+	{
+		try
+		{
+			for(var i=0; i< devicesList.length; i++)
+			{
+				device = devicesList[i];
+				if(device.address === command.device)
+				{
+					device.connected.connect(function() {
+						try {
+							console.log("changing lights of " + device);
+							device.write(color(command.red, command.green, command.blue, command.dim));
+							device.disconnectFromDevice()
+
+							/// This call is necessary because for some reason the device.disconnectFromDevice() doesn't completely disconnect
+							/// the device according to bluez.  This could be a bug in either bluez or the QtBluetooth code.
+							bleHacks.disconnectDevice(device.address);
+						}
+						catch(err)
+						{
+							console.log("ERROR: " + err.message);
+						}
+					});
+					console.log("connecting...");
+					device.connectToDevice();
+				}
+			}
+		}
+		catch(err)
+		{
+			console.log("error writing to light: " + err);
+		}
+	}
+	else if (command.method === "getDevices")
+	{
+		msg = {};
+		msg.method = "getDevicesReply";
+		msg.value = devicesList;
+		str = JSON.stringify(msg);
+		client.send(str);
+	}
+	else
+	{
+		console.log("error: Unrecognized command: " + msg);
+	}
 }
-
-Color.prototype.dim = function(level)
-{
-	this.dim = level
-};
-
-Color.prototype.toByteArray = function()
-{
-	return String.fromCharCode(this.red * this.dim) + String.fromCharCode(this.green * this.dim) + String.fromCharCode(this.blue * this.dim)
-}
-
-function Transition(dev, clr, tm)
-{
-	this.device = dev;
-	this.color = clr;
-	this.time = tm;
-	this.timer = bluemonkey.createTimer();
-}
-
-Transition.prototype.start = function()
-{
-
-};
 
 app = new Application();
+
+server = new WebSocketServer();
 
 app.main = function(args)
 {
 	console.log("starting LED server");
 
-	server = new WebSocketServer();
 	server.clients = [];
 	server.onconnection = function(newClient)
 	{
-		newClient.onmessage = function(msg)
-		{
-			console.log("can has client message");
-		};
+		try {
+			console.log("new client!");
+			newClient.onmessage = function(msg)
+			{
+				console.log("can has client message: " + msg);
+				doCommand(msg, newClient);
+			};
 
-		newClient.onclose = function()
-		{
-			server.clients.remove(newClient);
+			newClient.onclose = function()
+			{
+				console.log("client disconnect");
+				server.clients.remove(newClient);
+			}
+
+			server.clients.push(newClient);
 		}
-
-		server.clients.append(newClient);
+		catch(err)
+		{
+			console.log("error: " + err);
+		}
 	};
+
+	server.listen(9111);
 
 	ble.debug = true;
 
@@ -78,29 +111,15 @@ app.main = function(args)
 	{
 		console.log("New device discovered: " + device.name + " " + device.address);
 		try {
-			devices.push(device);
+			devicesList.push(device);
 			device.stateChanged.connect(function(state)
 			{
 				console.log("device state changed to: " + state);
 			});
-			device.connected.connect(function() {
-				try {
-					console.log("reading from device: " + device.read());
-
-					console.log("connected to device: " + device.name);
-
-					bytes = color(100, 100, 100, 0.5);
-					console.log("trying to write: " + bytes);
-					device.write(bytes);
-				}
-				catch(err)
-				{
-					console.log("ERROR: " + err.message);
-				}
+			device.error.connect(function(err)
+			{
+				console.log("Device Error: " + device.errorString());
 			});
-			//device.onMessage.connect(function(msg) { console.log("got msg: " + msg);});
-			console.log("connecting...");
-			device.connectToDevice();
 		}
 		catch(err)
 		{
@@ -120,6 +139,14 @@ app.main = function(args)
 
 	console.log("Trying to start ble scan...");
 	ble.scan = true;
+	/*setInterval(function(){
+		for(var i=0; i<devicesList.length; i++)
+		{
+			delete devicesList[i];
+		}
+		devicesList = [];
+		ble.scan = true;
+	}, 60000);*/
 }
 
 app.run();

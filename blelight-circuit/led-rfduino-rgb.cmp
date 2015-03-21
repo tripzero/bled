@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (25-Oct-2014 BZR 4029)-stable date = Tue 24 Feb 2015 09:23:04 AM PST
+Cmp-Mod V01 Created by CvPcb (25-Oct-2014 BZR 4029)-stable date = Fri 20 Mar 2015 05:50:15 PM PDT
 
 BeginCmp
 TimeStamp = /54E92802;
@@ -66,28 +66,28 @@ EndCmp
 BeginCmp
 TimeStamp = /54E92872;
 Reference = R1;
-ValeurCmp = 10k;
+ValeurCmp = 20k;
 IdModule  = SM1206;
 EndCmp
 
 BeginCmp
 TimeStamp = /54E928A6;
 Reference = R2;
-ValeurCmp = 10k;
+ValeurCmp = 20k;
 IdModule  = SM1206;
 EndCmp
 
 BeginCmp
 TimeStamp = /54E928AC;
 Reference = R3;
-ValeurCmp = 10k;
+ValeurCmp = 20k;
 IdModule  = SM1206;
 EndCmp
 
 BeginCmp
-TimeStamp = /54E9181E;
+TimeStamp = /550CBCFB;
 Reference = R4;
-ValeurCmp = 3ohm 1W;
+ValeurCmp = 13.9, 2W;
 IdModule  = SM1206;
 EndCmp
 
@@ -95,6 +95,20 @@ BeginCmp
 TimeStamp = /54E92F15;
 Reference = R5;
 ValeurCmp = 30k;
+IdModule  = SM1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /550CBC4B;
+Reference = R6;
+ValeurCmp = 39, 3W;
+IdModule  = SM1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /550CBB60;
+Reference = R7;
+ValeurCmp = 39, 3W;
 IdModule  = SM1206;
 EndCmp
 

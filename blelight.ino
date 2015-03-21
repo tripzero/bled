@@ -178,14 +178,11 @@ void setup()  {
 	pinMode(led_red, OUTPUT);
 	pinMode(led_blue, OUTPUT);
 
-	analogWrite(led_red, 0);
-	analogWrite(led_green, 0);
-	analogWrite(led_blue, 0);
+	analogWrite(led_red, 25);
+	analogWrite(led_green, 255);
+	analogWrite(led_blue, 255);
 
 	RFduinoBLE.begin();
-	Serial.begin(9600);
-	Serial.println("bled light version 0.1 started");
-	colorTest();
 }
 
 // the loop routine runs over and over again forever:
@@ -196,15 +193,8 @@ void loop()
 
 void RFduinoBLE_onReceive(char *data, int len)
 {
-	Serial.print("Received some data: ");
-	Serial.print(data);
-	Serial.print(" len: ");
-	Serial.println(len);
-
 	if(len >= 3)
 	{
-		flashSuccess();
-
 		uint8_t red = data[0];
 		uint8_t green = data[1];
 		uint8_t blue = data[2];
@@ -218,19 +208,15 @@ void RFduinoBLE_onReceive(char *data, int len)
 	}
 	else
 	{
-		flashError();
+		//flashError();
 	}
 }
 
 void RFduinoBLE_onConnect(){
-	Serial.println("We are connected!");
-	flashSuccess();
 	write("hello world\n");
 	connected = true;
 }
 
 void RFduinoBLE_onDisconnect(){
-	Serial.println("We are disconnected!");
-	flashError();
 	connected = false;
 }
