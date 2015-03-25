@@ -13,7 +13,51 @@ function color(r, g, b, dim)
 {
 	if(dim === undefined)
 		dim = 1.0
-	return String.fromCharCode(r*dim) + String.fromCharCode(g*dim) + String.fromCharCode(b*dim)
+	return 'c' + String.fromCharCode(r*dim) + String.fromCharCode(g*dim) + String.fromCharCode(b*dim)
+}
+
+function setState(isOn)
+{
+	return 's' + String.fromCharCode(isOn ? 1 : 0);
+}
+
+function fadeTo(r, g, b, delay)
+{
+	return 'f' + String.fromCharCode(r) + String.fromCharCode(g) + String.fromCharCode(b) + String.fromCharCode(delay);
+}
+
+function getDevice(address)
+{
+	for(var i=0; i< devicesList.length; i++)
+	{
+		device = devicesList[i];
+		if(device.address === command.device)
+		{
+			return device;
+		}
+	}
+	return null;
+}
+
+function setupDevice(device)
+{
+	device.doWhenConnected = null;
+	device.setDoWhenConnected = function(callback)
+	{
+		device.doWhenConnected = callback;
+		device.doWhenConnectedArgs = Array.prototype.slice.call(arguments);
+		device.doWhenConnectedArgs.splice(0,1);
+	}
+	device.connected.connect(function()
+	{
+		if(device.doWhenConnected !== null)
+		{
+			console.log("launching connected callback with args: " + device.doWhenConnectedArgs)
+			device.doWhenConnected.apply(device, device.doWhenConnectedArgs);
+			device.disconnectFromDevice()
+			bleHacks.disconnectDevice(device.address);
+		}
+	});
 }
 
 function doCommand(msg, client)
@@ -24,29 +68,17 @@ function doCommand(msg, client)
 	{
 		try
 		{
-			for(var i=0; i< devicesList.length; i++)
+			var device = getDevice(command.address);
+			if(device !== null)
 			{
-				device = devicesList[i];
-				if(device.address === command.device)
-				{
-					device.connected.connect(function() {
-						try {
-							console.log("changing lights of " + device);
-							device.write(color(command.red, command.green, command.blue, command.dim));
-							device.disconnectFromDevice()
-
-							/// This call is necessary because for some reason the device.disconnectFromDevice() doesn't completely disconnect
-							/// the device according to bluez.  This could be a bug in either bluez or the QtBluetooth code.
-							bleHacks.disconnectDevice(device.address);
-						}
-						catch(err)
-						{
-							console.log("ERROR: " + err.message);
-						}
-					});
-					console.log("connecting...");
-					device.connectToDevice();
-				}
+				c = color(command.red, command.green, command.blue, command.dim);
+				device.setDoWhenConnected(device.write, c);
+				console.log("connecting...");
+				device.connectToDevice();
+			}
+			else
+			{
+				console.log("no device by this address is available: " + command.address);
 			}
 		}
 		catch(err)
@@ -62,6 +94,51 @@ function doCommand(msg, client)
 		str = JSON.stringify(msg);
 		client.send(str);
 	}
+	else if (command.method === "fadeColorTo")
+	{
+		console.log("trying to fade colors...");
+		try
+		{
+			device = getDevice(command.address);
+			if(device !== null)
+			{
+
+				device.setDoWhenConnected(device.write, fadeTo(command.red, command.green, command.blue, command.delay));
+				device.connectToDevice();
+			}
+			else
+			{
+				console.log("no device by this address is available: " + command.address);
+			}
+		}
+		catch(err)
+		{
+			console.log("error writing to light: " + err);
+		}
+
+	}
+	else if(command.method === "setState")
+	{
+		console.log("trying to set state to: " + command.state)
+		try
+		{
+			device = getDevice(command.address)
+			if(device !== null)
+			{
+				device.setDoWhenConnected(device.write, setState(command.state));
+				device.connectToDevice();
+			}
+			else
+			{
+				console.log("no device by this address is available: " + command.address);
+			}
+		}
+		catch(err)
+		{
+			console.log("error writing to light: " + err);
+		}
+	}
+
 	else
 	{
 		console.log("error: Unrecognized command: " + msg);
@@ -112,6 +189,7 @@ app.main = function(args)
 		console.log("New device discovered: " + device.name + " " + device.address);
 		try {
 			devicesList.push(device);
+			setupDevice(device);
 			device.stateChanged.connect(function(state)
 			{
 				console.log("device state changed to: " + state);
@@ -139,14 +217,6 @@ app.main = function(args)
 
 	console.log("Trying to start ble scan...");
 	ble.scan = true;
-	/*setInterval(function(){
-		for(var i=0; i<devicesList.length; i++)
-		{
-			delete devicesList[i];
-		}
-		devicesList = [];
-		ble.scan = true;
-	}, 60000);*/
 }
 
 app.run();

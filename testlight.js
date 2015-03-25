@@ -27,11 +27,11 @@ app.main = function(args)
 
 		msg = {}
 
-		if(args[1] == "getDevices")
+		if(args[1] === "getDevices")
 		{
 			msg.method = "getDevices";
 		}
-		else if(args[1] == "changeLight")
+		else if(args[1] === "changeLight")
 		{
 			if(args.length < 7)
 			{
@@ -45,6 +45,27 @@ app.main = function(args)
 			msg.green = parseInt(args[4]);
 			msg.blue = parseInt(args[5]);
 			msg.dim = parseFloat(args[6]);
+		}
+		else if(args[1] === "fadeColorTo")
+		{
+			if(args.length < 7)
+			{
+				console.log("changeLight requires args: <device> <red> <green> <blue> <dim>");
+				app.quit();
+			}
+
+			msg.method = "fadeColorTo";
+			msg.device = args[2];
+			msg.red = parseInt(args[3]);
+			msg.green = parseInt(args[4]);
+			msg.blue = parseInt(args[5]);
+			msg.delay = parseFloat(args[6]);
+		}
+		else if(args[1] === "setState")
+		{
+			msg.method = "setState";
+			msg.device = args[2];
+			msg.state = args[3] === "true";
 		}
 
 		str = JSON.stringify(msg);
