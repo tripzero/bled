@@ -37,7 +37,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "21 mar 2015"
+Date "27 mar 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -96,36 +96,12 @@ F 3 "~" H 5500 3050 30  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	1800 700  1800 1400
+	1800 700  1800 3300
 Wire Wire Line
-	1800 1400 1800 3300
-Wire Wire Line
-	1800 3300 2250 3300
-Wire Wire Line
-	2250 3300 2450 3300
-Wire Wire Line
-	2450 3300 4400 3300
-Wire Wire Line
-	4400 3300 4700 3300
-Wire Wire Line
-	4700 3300 4950 3300
-Wire Wire Line
-	4950 3300 5250 3300
-Wire Wire Line
-	5250 3300 5500 3300
-Wire Wire Line
-	5500 3300 5800 3300
-Wire Wire Line
-	5800 3300 6050 3300
+	1800 3300 6050 3300
 Connection ~ 6050 3300
 Wire Wire Line
-	6300 1400 6300 1600
-Wire Wire Line
-	6300 1600 6300 1800
-Wire Wire Line
-	6300 1800 6300 2500
-Wire Wire Line
-	6300 2500 6300 3300
+	6300 1400 6300 3300
 $Comp
 L LED D3
 U 1 1 54E92923
@@ -187,50 +163,15 @@ Wire Wire Line
 	2250 850  4300 850 
 Wire Wire Line
 	4300 700  1800 700 
-$Comp
-L R R5
-U 1 1 54E92F15
-P 2000 2350
-F 0 "R5" V 2080 2350 40  0000 C CNN
-F 1 "30k" V 2007 2351 40  0000 C CNN
-F 2 "~" V 1930 2350 30  0000 C CNN
-F 3 "~" H 2000 2350 30  0000 C CNN
-	1    2000 2350
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2250 2600 2250 3300
 Connection ~ 2250 3300
 Wire Wire Line
 	2450 1400 1800 1400
 Connection ~ 1800 1400
 Wire Wire Line
-	2000 1500 2200 1500
-Wire Wire Line
 	2200 1500 2450 1500
-Connection ~ 2000 1500
+Connection ~ 2200 1500
 Wire Wire Line
-	2250 2600 2000 2600
-Wire Wire Line
-	2000 2000 2000 2050
-Wire Wire Line
-	2000 2050 2000 2100
-Wire Wire Line
-	2000 1500 2250 850 
-$Comp
-L VR VR1
-U 1 1 54E943F3
-P 2000 1750
-F 0 "VR1" V 2060 1704 40  0000 C TNN
-F 1 "10Mohm" V 2000 1750 40  0000 C CNN
-F 2 "~" H 2000 1750 60  0000 C CNN
-F 3 "~" H 2000 1750 60  0000 C CNN
-	1    2000 1750
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2250 2050 2000 2050
-Connection ~ 2000 2050
+	2200 1500 2250 850 
 Wire Wire Line
 	4150 2800 4150 1900
 Wire Wire Line
@@ -292,14 +233,6 @@ Wire Wire Line
 Connection ~ 5500 3300
 Connection ~ 4950 3300
 Connection ~ 4400 3300
-Wire Wire Line
-	2250 2050 2250 2300
-Wire Wire Line
-	2250 2300 4300 2300
-Wire Wire Line
-	4300 2300 4300 1600
-Wire Wire Line
-	4300 1600 4000 1600
 $Comp
 L PWR_INPUT PWR1
 U 1 1 54ECB369
@@ -333,7 +266,6 @@ Wire Wire Line
 	2750 2500 2200 2500
 Wire Wire Line
 	2200 2500 2200 1500
-Connection ~ 2200 1500
 Wire Wire Line
 	2450 1600 2300 1600
 Wire Wire Line
